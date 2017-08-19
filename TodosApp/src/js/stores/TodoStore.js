@@ -9,22 +9,25 @@ class TodoStore extends EventEmitter {
       {
         id: 113464613,
         text: "Go Shopping",
+        description: "This morning at 10 am",
         complete: false
       },
       {
         id: 235684679,
         text: "Pay Water Bill",
+        description: "During this week",
         complete: false
       },
     ];
   }
 
-  createTodo(text) {
+  createTodo(text, description) {
     const id = Date.now();
 
     this.todos.push({
       id,
       text,
+      description,
       complete: false,
     });
 
@@ -64,7 +67,7 @@ class TodoStore extends EventEmitter {
   handleActions(action) {
     switch(action.type) {
       case "CREATE_TODO": {
-        this.createTodo(action.text);
+        this.createTodo(action.text, action.description);
         break;
       }
       case "DELETE_TODO": {

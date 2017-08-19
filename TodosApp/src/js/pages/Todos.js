@@ -11,7 +11,8 @@ export default class Todos extends React.Component {
     this.getTodos = this.getTodos.bind(this);
     this.state = {
       todos: TodoStore.getAll(),
-      message: "NEW TODO"
+      message: "NEW TODO",
+      description: "DESCRIPTION"
     };
   }
 
@@ -34,7 +35,7 @@ export default class Todos extends React.Component {
   }
 
   createTodo(){
-    TodoActions.createTodo(this.state.message);
+    TodoActions.createTodo(this.state.message, this.state.description);
   }
 
   handleChange(e){
@@ -43,10 +44,18 @@ export default class Todos extends React.Component {
       message: e.target.value,
     });
   }
+
+  handleChangeDescription(e){
+    this.setState({
+      todos: TodoStore.getAll(),
+      description: e.target.value
+    });
+  }
   
   render() {
     const { todos } = this.state;
     var message = this.state.message;
+    var description = this.state.description;
     const TodoComponents = todos.map((todo) => {
         return <Todo key={todo.id} {...todo}/>;
     });
@@ -57,7 +66,10 @@ export default class Todos extends React.Component {
         <br/>
         <ul>{TodoComponents}</ul>
         <hr/>
-        <input type="text" value={message} onChange={this.handleChange.bind(this)} />
+        <p> <span class='glyphicon glyphicon-info-sign'> </span> ToDo title: </p><input type="text" value={message} onChange={this.handleChange.bind(this)} />
+        <br/>
+        <br/>
+        <p> <span class='glyphicon glyphicon-list-alt'> </span> ToDo description:</p><textarea rows="5" cols="50" type="text" value={description} onChange={this.handleChangeDescription.bind(this)} />
         <br/>
         <br/>
         <button onClick={this.createTodo.bind(this)} class="btn btn-success">Create!  <span class='glyphicon glyphicon-ok-sign'></span></button> 

@@ -31,7 +31,7 @@ export default class Todo extends React.Component {
 
     return (
       <li>
-        <Link to={`favorites/${text}?id=${this.props.id}&completed=${complete}`}><span>{text}  </span></Link>
+        <Link to={`favorites/${text}?id=${this.props.id}&completed=${complete}&description=${this.props.description}`}><span>{text}  </span></Link>
         <span class={icon} aria-hidden="true">   </span>
         <span>  </span>
         <button onClick={this.doneUndone.bind(this)} class='btn btn-primary'> (Un)Done  <span class='glyphicon glyphicon-erase'></span></button>
