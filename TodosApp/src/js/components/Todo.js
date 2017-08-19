@@ -1,5 +1,6 @@
 import React from "react";
 import * as TodoActions from "../actions/TodoActions";
+import { Link } from "react-router";
 
 export default class Todo extends React.Component {
   constructor(props) {
@@ -17,6 +18,7 @@ export default class Todo extends React.Component {
 
   render() {
     const { complete, edit, text } = this.props;
+    console.log(this.props);
     const icon = complete ? "glyphicon glyphicon-ok" : "glyphicon glyphicon-remove"
 
     if (edit) {
@@ -29,7 +31,7 @@ export default class Todo extends React.Component {
 
     return (
       <li>
-        <span>{text}  </span>
+        <Link to={`favorites/${text}?id=${this.props.id}&completed=${complete}`}><span>{text}  </span></Link>
         <span class={icon} aria-hidden="true">   </span>
         <span>  </span>
         <button onClick={this.doneUndone.bind(this)} class='btn btn-primary'> (Un)Done  <span class='glyphicon glyphicon-erase'></span></button>

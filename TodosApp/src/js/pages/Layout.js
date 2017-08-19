@@ -7,9 +7,6 @@ import Nav from "../components/layout/Nav";
 export default class Layout extends React.Component {
   constructor(){
     super();
-    this.state = {
-      newTodo : "New TODO!!"
-    }
   }
   
   render() {

@@ -40,9 +40,6 @@ export default class Nav extends React.Component {
               <li class={archivesClass}>
                 <Link to="favorites" onClick={this.toggleCollapse.bind(this)}>Details <span class='glyphicon glyphicon-file'> </span></Link>
               </li>
-              <li class={settingsClass}>
-                <Link to="settings" onClick={this.toggleCollapse.bind(this)}>Settings</Link>
-              </li>
             </ul>
           </div>
         </div>
