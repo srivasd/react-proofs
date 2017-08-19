@@ -35,10 +35,10 @@ export default class Nav extends React.Component {
           <div class={"navbar-collapse " + navClass} id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
               <li class={featuredClass}>
-                <IndexLink to="/" onClick={this.toggleCollapse.bind(this)}>Todos</IndexLink>
+                <IndexLink to="/" onClick={this.toggleCollapse.bind(this)}>ToDos  <span class='glyphicon glyphicon-tasks'></span></IndexLink>
               </li>
               <li class={archivesClass}>
-                <Link to="favorites" onClick={this.toggleCollapse.bind(this)}>Favorites</Link>
+                <Link to="favorites" onClick={this.toggleCollapse.bind(this)}>Details <span class='glyphicon glyphicon-file'> </span></Link>
               </li>
               <li class={settingsClass}>
                 <Link to="settings" onClick={this.toggleCollapse.bind(this)}>Settings</Link>

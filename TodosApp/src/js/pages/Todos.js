@@ -53,14 +53,16 @@ export default class Todos extends React.Component {
 
     return (
       <div>
-        <h1>Todos</h1>
-        <button onClick={this.reloadTodos.bind(this)} class="btn btn-warning">Reload!</button>
+        <h1>ToDos  <span class='glyphicon glyphicon-tasks'></span></h1>
         <br/>
         <ul>{TodoComponents}</ul>
+        <hr/>
         <input type="text" value={message} onChange={this.handleChange.bind(this)} />
         <br/>
         <br/>
-        <button onClick={this.createTodo.bind(this)} class="btn btn-success">Create!</button>
+        <button onClick={this.createTodo.bind(this)} class="btn btn-success">Create!  <span class='glyphicon glyphicon-ok-sign'></span></button> 
+        <span>  </span>
+        <button onClick={this.reloadTodos.bind(this)} class="btn btn-warning">Reload!  <span class='glyphicon glyphicon-refresh'></span></button>
       </div>
     );
   }

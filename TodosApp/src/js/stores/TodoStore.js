@@ -31,14 +31,48 @@ class TodoStore extends EventEmitter {
     this.emit("change");
   }
 
+  deleteTodo(myId) {
+    for(var i = this.todos.length - 1; i >= 0; i--) {
+      if(this.todos[i].id === myId) {
+        this.todos.splice(i, 1);
+      }
+    }
+    this.emit("change");
+  }
+
+  doneUndone(myId) {
+    for(var i = this.todos.length - 1; i >= 0; i--) {
+      if(this.todos[i].id === myId) {
+        this.todos[i].complete = !this.todos[i].complete;
+      }
+    }
+    this.emit("change");
+  }
+
   getAll() {
     return this.todos;
+  }
+
+  getTodo(myId){
+    for(i = 0; i < this.todos.length; i++){
+      if(this.todos[i].id === myId){
+        return this.todos[i];
+      }
+    }
   }
 
   handleActions(action) {
     switch(action.type) {
       case "CREATE_TODO": {
         this.createTodo(action.text);
+        break;
+      }
+      case "DELETE_TODO": {
+        this.deleteTodo(action.id);
+        break;
+      }
+      case "EDIT_TODO": {
+        this.doneUndone(action.id);
         break;
       }
       case "RECEIVE_TODOS": {
