@@ -1,53 +1,36 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
+import { OpenVidu, Session, Stream } from 'openvidu-browser';
 
 class App extends Component {
   constructor(){
-    super()
+    super();
+    this.OV = new OpenVidu();
+    this.location.hostname = 'localhost';
+    this.session = this.OV.initSession('wss://' + this.location.hostname + ':8443/' + this.sessionId + '?secret=MY_SECRET');;
   }
-  
-  /*joinSession() {
-  
-    var sessionId = document.getElementById("sessionId").value;
-  
-    OV = new OpenVidu();
-    session = OV.initSession("wss://" + location.hostname + ":8443/" + sessionId + '?secret=MY_SECRET');
-  
-    session.on('streamCreated', function (event) {
-      var subscriber = session.subscribe(event.stream, 'subscriber');
-    });
-  
-    session.connect(null, function (error) {
-  
-      if (!error) {
-        var publisher = OV.initPublisher('publisher');
-        session.publish(publisher);
-      } else {
-        console.log('There was an error connecting to the session:', error.code, error.message);
-      }
-      
-    });
-  
-    document.getElementById('session-header').innerText = sessionId;
-    document.getElementById('join').style.display = 'none';
-    document.getElementById('session').style.display = 'block';
-  
-    return false;
+
+  removeAllUserData() {
+    var nicknameElements = document.getElementsByClassName('data-node');
+    while (nicknameElements[0]) {
+      nicknameElements[0].parentNode.removeChild(nicknameElements[0]);
+    }
   }
-  
+
   leaveSession() {
-  
-    session.disconnect();
-  
-    document.getElementById('join').style.display = 'block';
-    document.getElementById('session').style.display = 'none';
+    
+      // --- 6) Leave the session by calling 'disconnect' method over the Session object ---
+    
+      this.session.disconnect();
+    
+      // Removing all HTML elements with the user's nicknames. 
+      // HTML videos are automatically removed when leaving a Session
+      this.removeAllUserData();
+    
+      // Back to 'Join session' page
+      document.getElementById('join').style.display = 'block';
+      document.getElementById('session').style.display = 'none';
   }
-  
-  
-  onbeforeunload = function () {
-    session.disconnect()
-  };*/
 
   render() {
     return (
@@ -65,9 +48,9 @@ class App extends Component {
         </form>
       </div>
 
-      <div id="session" style="display: none;">
-        <h1 id="session-header"></h1>
-        <input type="button" onClick="leaveSession()" value="LEAVE"/>
+      <div id="session" style={{display: 'none'}}>
+        <h1 id="session-header">Section Header</h1>
+        <input type="button" onClick={this.leaveSession()} value="LEAVE"/>
         <div>
           <div id="publisher"><h3>YOU</h3></div>
           <div id="subscriber"><h3>OTHERS</h3></div>
