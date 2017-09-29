@@ -1,36 +1,54 @@
 import React, { Component } from 'react';
+import ReactDOM from 'react-dom';
 import './App.css';
 import { OpenVidu, Session, Stream } from 'openvidu-browser';
 
 class App extends Component {
+  
   constructor(){
     super();
+    //this.sessionId = document.getElementById("sessionId").value;
+    this.sessionId = ReactDOM.findDOMNode(this.refs.sessionId).focus();
     this.OV = new OpenVidu();
-    this.location.hostname = 'localhost';
-    this.session = this.OV.initSession('wss://' + this.location.hostname + ':8443/' + this.sessionId + '?secret=MY_SECRET');;
+    this.session = this.OV.initSession("wss://" + window.location.hostname + ":8443/" + this.sessionId + '?secret=MY_SECRET');
   }
 
-  removeAllUserData() {
-    var nicknameElements = document.getElementsByClassName('data-node');
-    while (nicknameElements[0]) {
-      nicknameElements[0].parentNode.removeChild(nicknameElements[0]);
-    }
-  }
-
-  leaveSession() {
+  joinSession() {
     
-      // --- 6) Leave the session by calling 'disconnect' method over the Session object ---
+      this.session.on('streamCreated', function (event) {
+        var subscriber = this.session.subscribe(event.stream, 'subscriber');
+      });
+    
+      this.session.connect(null, function (error) {
+    
+        if (!error) {
+          var publisher = this.OV.initPublisher('publisher');
+          this.session.publish(publisher);
+        } else {
+          console.log('There was an error connecting to the session:', error.code, error.message);
+        }
+        
+      });
+    
+      document.getElementById('session-header').innerText = this.sessionId;
+      document.getElementById('join').style.display = 'none';
+      document.getElementById('session').style.display = 'block';
+    
+      return false;
+    }
+    
+    leaveSession() {
     
       this.session.disconnect();
     
-      // Removing all HTML elements with the user's nicknames. 
-      // HTML videos are automatically removed when leaving a Session
-      this.removeAllUserData();
-    
-      // Back to 'Join session' page
       document.getElementById('join').style.display = 'block';
       document.getElementById('session').style.display = 'none';
-  }
+    }
+    
+    
+    onbeforeunload = function () {
+      this.session.disconnect()
+    };
 
   render() {
     return (
