@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import './App.css';
 import { OpenVidu, Session, Stream } from 'openvidu-browser';
 
@@ -7,14 +6,32 @@ class App extends Component {
   
   constructor(){
     super();
-    //this.sessionId = document.getElementById("sessionId").value;
-    this.sessionId = ReactDOM.findDOMNode(this.refs.sessionId).focus();
+    this.focusSessionId = this.focusSessionId.bind(this);
+    this.focusSessionHeader = this.focusSessionHeader.bind(this);
+    this.focusSession = this.focusSession.bind(this);
+    this.focusJoin = this.focusJoin.bind(this);
     this.OV = new OpenVidu();
     this.session = this.OV.initSession("wss://" + window.location.hostname + ":8443/" + this.sessionId + '?secret=MY_SECRET');
   }
 
+  focusSessionId() {
+    this.sessionId.focus();
+  }
+
+  focusJoin(){
+    this.joinSession.focus();
+  }
+
+  focusSession(){
+    this.sessionElem.focus();
+  }
+
+  focusSessionHeader(){
+    this.sessionHeader.focus();
+  }
+
   joinSession() {
-    
+
       this.session.on('streamCreated', function (event) {
         var subscriber = this.session.subscribe(event.stream, 'subscriber');
       });
@@ -29,10 +46,15 @@ class App extends Component {
         }
         
       });
-    
-      document.getElementById('session-header').innerText = this.sessionId;
-      document.getElementById('join').style.display = 'none';
-      document.getElementById('session').style.display = 'block';
+
+      //document.getElementById('session-header').innerText = this.sessionId;     
+      //this.sessionHeader.innerHTML = this.sessionId;
+      
+      //document.getElementById('join').style.display = 'none';
+      //this.join.style.display = 'none';
+      
+      //document.getElementById('session').style.display = 'block';
+      //this.sessionElem.style.display = 'block';
     
       return false;
     }
@@ -40,9 +62,12 @@ class App extends Component {
     leaveSession() {
     
       this.session.disconnect();
-    
-      document.getElementById('join').style.display = 'block';
-      document.getElementById('session').style.display = 'none';
+
+      //document.getElementById('join').style.display = 'block';
+      //this.join.style.display = 'block';
+      
+      //document.getElementById('session').style.display = 'none';
+      //this.sessionElem.style.display = 'none';
     }
     
     
@@ -53,12 +78,12 @@ class App extends Component {
   render() {
     return (
       <div>
-      <div id="join">
+      <div id="join" ref={(input) => { this.join = input; }}>
         <h1> Join a video session </h1>
-        <form onsubmit="return joinSession()">
+        <form onSubmit={this.joinSession()}>
           <p>
             <label> Session: </label>
-            <input type="text" id="sessionId" value="SessionA" required/>
+            <input type="text" id="sessionId" ref={(input) => { this.sessionId = input.value; }} value="SessionA" required/>
           </p>
           <p>
             <input type="submit" value="JOIN"/>
@@ -66,8 +91,8 @@ class App extends Component {
         </form>
       </div>
 
-      <div id="session" style={{display: 'none'}}>
-        <h1 id="session-header">Section Header</h1>
+      <div id="session" ref={(input) => { this.sessionElem = input; }} style={{display: 'none'}}>
+        <h1 id="session-header" ref={(input) => { this.sessionHeader = input; }}>Section Header</h1>
         <input type="button" onClick={this.leaveSession()} value="LEAVE"/>
         <div>
           <div id="publisher"><h3>YOU</h3></div>
