@@ -53,9 +53,9 @@ class App extends Component {
       console.log(this.OV)
       this.session = this.OV.initSession("wss://" + window.location.hostname + ":8443/" + this.sessionId.value + '?secret=MY_SECRET');
       console.log(this.session)
-
+      var that1 = this;
       this.session.on('streamCreated', function (event) {
-        var subscriber = this.session.subscribe(event.stream, 'subscriber');
+        var subscriber = that1.session.subscribe(event.stream, 'subscriber');
       });
       var that = this;
       this.session.connect(null, function (error) {
