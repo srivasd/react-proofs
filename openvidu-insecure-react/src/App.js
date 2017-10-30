@@ -1,21 +1,22 @@
 import React, { Component } from 'react';
 import './App.css';
-import { OpenVidu, Session, Stream } from 'openvidu-browser';
+import { OpenVidu } from 'openvidu-browser';
+import StreamComponent from './StreamComponent.js';
 
 class App extends Component {
   
   constructor(props){
     super(props);
     this.state = {valueSessionId: 'SessionA',
-                  valueUserName: "Participant" + Math.floor(Math.random() * 100),
-                  };
-    this.focusSessionId = this.focusSessionId.bind(this);
-    this.focusUserName = this.focusUserName.bind(this);
-    this.focusSessionHeader = this.focusSessionHeader.bind(this);
+                  valueUserName: 'Participant' + Math.floor(Math.random() * 100),
+                  session: undefined,
+                  mainVideoStream: undefined,
+                  localStream: undefined,
+                  remoteStreams: [],
+                 };
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleOnMouseUp = this.handleOnMouseUp.bind(this);
-    this.focusSession = this.focusSession.bind(this);
-    this.focusJoin = this.focusJoin.bind(this);
+    this.handleClick  = this.handleClick.bind(this);
+    this.handleMainVideoStream = this.handleMainVideoStream.bind(this);
     this.onbeforeunload = this.onbeforeunload.bind(this);
   }
 
@@ -24,40 +25,18 @@ class App extends Component {
     this.joinSession();
   }
 
-  handleOnMouseUp(){
+  handleClick(){
     this.leaveSession();
-  }
-
-  focusSessionId() {
-    this.sessionId.focus();
-  }
-
-  focusUserName() {
-    this.userName.focus();
-  }
-
-  focusJoin(){
-    this.joinSession.focus();
-  }
-
-  focusSession(){
-    this.sessionElem.focus();
-  }
-
-  focusSessionHeader(){
-    this.sessionHeader.focus();
   }
 
   handleChangeSessionId(e){
     this.setState({
       valueSessionId : e.target.value,
-      valueUserName : this.userName.value,
     });
   }
 
   handleChangeUserName(e){
     this.setState({
-      valueSessionId : this.sessionId.value,
       valueUserName : e.target.value,
     });
   }
@@ -65,168 +44,170 @@ class App extends Component {
   joinSession() {
 
       this.OV = new OpenVidu();
-      console.log(this.OV)
-      
-      this.session = this.OV.initSession("wss://" + window.location.hostname + ":8443/" + this.sessionId.value + '?secret=MY_SECRET');
-      console.log(this.session)
-      
-      var that1 = this;
-      
-      this.session.on('streamCreated', function (event) {
-        var subscriber = that1.session.subscribe(event.stream, 'video-container');
+      console.log(this.OV);
 
-        subscriber.on('videoElementCreated', function(event) {
-          that1.appendUserData(event.element, subscriber.stream.connection);
+      this.setState({
+        session: this.OV.initSession("wss://" + window.location.hostname + ":8443/" + this.sessionId.value + '?secret=MY_SECRET'),
+      }, () => {
+
+        var mySession = this.state.session;
+
+        console.log(mySession);
+        
+        var that1 = this;
+
+        
+        mySession.on('streamCreated', (event) => {
+          
+          var myRemoteStreams = that1.state.remoteStreams; 
+
+          myRemoteStreams.push(event.stream); 
+            
+          var pushRS = setInterval(that1.setState({
+            remoteStreams: myRemoteStreams
+          }, () => {
+            if(myRemoteStreams===that1.state.remoteStreams){
+              clearInterval(pushRS);
+          }}), 200);
+            
+          mySession.subscribe(event.stream, '');
+
         });
-      });
-      
-      var that = this;
-      
-      this.session.connect(null, '{"clientData": "' + this.userName.value + '"}', function (error) {
-    
-        if (!error) {
-          var publisher = that.OV.initPublisher('video-container', {
-            audio: true,
-            video: true,
-            quality: 'MEDIUM'
-          });
 
-          publisher.on('videoElementCreated', function (event) {
-            that.initMainVideo(event.element, this.userName.value);
-            that.appendUserData(event.element, this.userName.value);
-            event.element['muted']  = true;
-          });
 
-          that.session.publish(publisher);
-          console.log('No error');
-        } else {
-          console.log('There was an error connecting to the session:', error.code, error.message);
-        }
-      });
+        mySession.on('streamDestroyed', (event) => {
+          event.preventDefault();
+        
+          that1.deleteRemoteStream(event.stream);
+        });
+        
+        var that = this;
+        
+        mySession.connect(null, '{"clientData": "' + this.state.valueUserName + '"}', (error) => {
+            
+          if (!error) {
+            let publisher = that.OV.initPublisher('', {
+              audio: true,
+              video: true,
+              quality: 'MEDIUM'
+            });
 
-      //document.getElementById('session-header').innerText = this.sessionId;     
-      this.sessionHeader.innerText = this.sessionId.value;
-      
-      //document.getElementById('join').style.display = 'none';
-      this.join.style.display = 'none';
-      
-      //document.getElementById('session').style.display = 'block';
-      this.sessionElem.style.display = 'block';
-    
-      return false;
+            var streamInterval = setInterval(function(){
+              that.setState({
+                localStream: publisher.stream,
+                mainVideoStream: that.state.localStream
+              }, () => {
+                if(that.state.localStream!==undefined&&that.state.mainVideoStream!==undefined){
+                  clearInterval(streamInterval);
+              }})}, 200);
+
+              mySession.publish(publisher);
+          
+          } else {
+            console.log('There was an error connecting to the session:', error.code, error.message);
+          }
+                
+        });
+        return false;
+      });    
     }
     
     leaveSession() {
     
-      this.session.disconnect();
+      if(this.OV) {this.state.session.disconnect();}
 
-      this.removeAllUserData();
+      this.setState({
+        session: null,
+        remoteStreams: [],
+        localStream: null,
+      });
+      this.OV = null;
+    }
 
-      //document.getElementById('join').style.display = 'block';
-      this.join.style.display = 'block';
-      
-      //document.getElementById('session').style.display = 'none';
-      this.sessionElem.style.display = 'none';
+    deleteRemoteStream(stream) {
+      var myRemoteStreams = this.state.remoteStreams;
+      let index = myRemoteStreams.indexOf(stream, 0);
+      if (index > -1) {
+        myRemoteStreams.splice(index, 1);
+        var deleteRS = setInterval(this.setState({
+          remoteStreams: myRemoteStreams
+        }, () => {
+          if(myRemoteStreams===this.state.remoteStreams){
+            clearInterval(deleteRS);
+          }
+        }), 200);
+      }
+    }
+
+    getMainVideoStream(stream) {
+      this.setState({
+        mainVideoStream: stream,
+      });
     }
     
     onbeforeunload(event) {
-      this.session.disconnect()
+      this.state.session.disconnect();
     };
 
     componentDidMount(){
-      window.addEventListener("beforeunload", this.onbeforeunload)
+      window.addEventListener("beforeunload", this.onbeforeunload);
     }
 
     componentWillUnmount(){
       window.removeEventListener("beforeunload", this.onbeforeunload)
     }
 
-
-    appendUserData(videoElement, connection) {
-      var userData;
-      var nodeId;
-      if (typeof connection === "string") {
-        userData = connection;
-        nodeId = connection;
-      } else {
-        userData = JSON.parse(connection.data).clientData;
-        nodeId = connection.connectionId;
-      }
-      var dataNode = document.createElement('div');
-      dataNode.className = "data-node";
-      dataNode.id = "data-" + nodeId;
-      dataNode.innerHTML = "<p>" + userData + "</p>";
-      videoElement.parentNode.insertBefore(dataNode, videoElement.nextSibling);
-      this.addClickListener(videoElement, userData);
+    handleMainVideoStream(event) {
+      this.getMainVideoStream(event.stream);
     }
-    
-    removeUserData(connection) {
-      var dataNode = document.getElementById("data-" + connection.connectionId);
-      dataNode.parentNode.removeChild(dataNode);
-    }
-    
-    removeAllUserData() {
-      var nicknameElements = document.getElementsByClassName('data-node');
-      while (nicknameElements[0]) {
-        nicknameElements[0].parentNode.removeChild(nicknameElements[0]);
-      }
-    }
-    
-    addClickListener(videoElement, userData) {
-      videoElement.addEventListener('click', function () {
-        var mainVideo = document.querySelector('#main-video video');
-        var mainUserData = document.querySelector('#main-video p');
-        if (mainVideo.src !== videoElement.src) {
-          mainUserData.innerHTML = userData;
-          mainVideo.src = videoElement.src;
-        }
-      });
-    }
-    
-    initMainVideo(videoElement, userData) {
-      document.querySelector('#main-video video').src = videoElement.src;
-      document.querySelector('#main-video p').innerHTML = userData;
-      document.querySelector('#main-video video')['muted'] = true;
-    }
-
-
 
   render() {
     var valueSessionId = this.state.valueSessionId;
     var valueUserName = this.state.valueUserName;
-    
-    return (
-      <div id="main-container" class="container">
-        <div id="join" ref={(input) => { this.join = input; }}>
-          <div id="img-div"><img src="resources/images/openvidu_grey_bg_transp_cropped.png" /></div>
-          <div id="join-dialog" class="jumbotron vertical-center">
-            <h1>Join a video session</h1>
-            <form class="form-group" onSubmit={this.handleSubmit}>
-              <p>
-                <label>Participant</label>
-                <input class="form-control" type="text" id="userName" ref={(input) => { this.userName = input; }} value={valueUserName} onChange={this.handleChangeUserName.bind(this)}required/>
-              </p>
-              <p>
-                <label>Session</label>
-                <input class="form-control" type="text" id="sessionId" ref={(input) => { this.sessionId = input; }} value={valueSessionId} onChange={this.handleChangeSessionId.bind(this)}required/>
-              </p>
-              <p class="text-center">
-                <input class="btn btn-lg btn-success" type="submit" name="commit" value="Join!"/>
-              </p>
-            </form>
+    console.log(this.state.localStream);
+    console.log(this.state.remoteStreams);
+    console.log(this.state.mainVideoStream);
+      return (
+        <div id="main-container" className="container">
+        { this.state.session === undefined ? <div id="join">
+          <div id="img-div"><img src="resources/images/openvidu_grey_bg_transp_cropped.png" alt="OpenVidu logo"/></div>
+          <div id="join-dialog" className="jumbotron vertical-center">
+          <h1> Join a video session </h1>
+          <form className="form-group" onSubmit={this.handleSubmit}>
+            <p>
+              <label>Participant: </label>
+              <input className="form-control" type="text" id="userName" value={valueUserName} onChange={this.handleChangeUserName.bind(this)}required/>
+            </p>
+            <p>
+              <label> Session: </label>
+              <input className="form-control" type="text" id="sessionId" ref={(input) => { this.sessionId = input; }} value={valueSessionId} onChange={this.handleChangeSessionId.bind(this)}required/>
+            </p>
+            <p className="text-center">
+              <input className="btn btn-lg btn-success" name="commit" type="submit" value="JOIN"/>
+            </p>
+          </form>
           </div>
-        </div>
-
-        <div id="session" ref={(input) => { this.sessionElem = input; }} style={{display: 'none'}}>
-          <div id="session-header" ref={(input) => { this.sessionHeader = input; }}>
-            <h1 id="session-title"></h1>
-            <input class="btn btn-large btn-danger" type="button" id="buttonLeaveSession" onMouseUp={this.handleOnMouseUp} value="Leave session"/>
+        </div> : null }
+  
+        { this.state.session !== undefined ? <div id="session">
+          <div id="session-header">
+            <h1 id="session-title" value={valueSessionId}>{valueSessionId}</h1>
+            <input id="buttonLeaveSession" className="btn btn-large btn-danger" type="button" onClick={this.handleClick} value="LeaveSession"/>
           </div>
-          <div id="main-video" class="col-md-6"><p></p><video autoplay src=""></video></div>
-			    <div id="video-container" class="col-md-6"></div>
-        </div>
+          { this.state.mainVideoStream !== undefined ? <div id="main-video" className="col-md-6">
+            <StreamComponent stream={this.state.mainVideoStream} isMuted={true}></StreamComponent>
+          </div> : null }
+          <div id="video-container" className="col-md-6">
+          { this.state.localStream !== undefined ? <div className="stream-container col-md-6 col-xs-6">
+              <StreamComponent stream={this.state.localStream} isMuted={true} mainVideoStream={this.handleMainVideoStream}></StreamComponent>
+            </div> : null }
+          { this.state.remoteStreams.map((s, i) => <div key={i} className="stream-container col-md-6 col-xs-6">
+              <StreamComponent stream={s} isMuted={false} mainVideoStream={this.handleMainVideoStream}></StreamComponent>
+            </div>) }
+          </div>
+        </div> : null }
       </div>
-    );
+      ); 
   }
 }
 
