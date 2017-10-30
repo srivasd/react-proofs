@@ -113,15 +113,20 @@ class App extends Component {
     }
     
     leaveSession() {
-    
-      if(this.OV) {this.state.session.disconnect();}
+      var mySession = this.state.session;
+      
+      if(this.OV) {mySession.disconnect();}
+
+      this.OV = null;
 
       this.setState({
-        session: null,
+        session: undefined,
         remoteStreams: [],
-        localStream: null,
+        valueSessionId: 'SessionA',
+        valueUserName: 'Participant' + Math.floor(Math.random() * 100),
+        localStream: undefined,
       });
-      this.OV = null;
+
     }
 
     deleteRemoteStream(stream) {
