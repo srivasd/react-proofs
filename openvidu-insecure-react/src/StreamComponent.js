@@ -19,10 +19,11 @@ export default class StreamComponent extends Component {
     var intervalSrc = setInterval(function(){
       if(that.state!==undefined){
         if(props.stream.videoSrcObject!==undefined){
-          if (!(that.state.videoSrcUnsafe === props.stream.videoSrcObject)) {
+          var src = URL.createObjectURL(props.stream.videoSrcObject);
+          if (!(that.state.videoSrcUnsafe === src)) {
             that.setState({
-              videoSrc: URL.createObjectURL(props.stream.videoSrcObject),
-              videoSrcUnsafe: URL.createObjectURL(props.stream.videoSrcObject)
+              videoSrc: src,
+              videoSrcUnsafe: src
             });
             clearInterval(intervalSrc);
           }

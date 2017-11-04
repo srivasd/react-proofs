@@ -134,13 +134,9 @@ class App extends Component {
       let index = myRemoteStreams.indexOf(stream, 0);
       if (index > -1) {
         myRemoteStreams.splice(index, 1);
-        var deleteRS = setInterval(this.setState({
+        this.setState({
           remoteStreams: myRemoteStreams
-        }, () => {
-          if(myRemoteStreams===this.state.remoteStreams){
-            clearInterval(deleteRS);
-          }
-        }), 200);
+        });
       }
     }
 
@@ -151,7 +147,7 @@ class App extends Component {
     }
     
     onbeforeunload(event) {
-      this.state.session.disconnect();
+      this.leaveSession();
     };
 
     componentDidMount(){
