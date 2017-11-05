@@ -136,6 +136,8 @@ class App extends Component {
         myRemoteStreams.splice(index, 1);
         this.setState({
           remoteStreams: myRemoteStreams
+        }, () => {
+          console.log(myRemoteStreams);
         });
       }
     }

@@ -29,10 +29,27 @@ export default class StreamComponent extends Component {
           }
         }
       }
-    }, 500);
+    }, 200);
   }
   
+  componentWillReceiveProps(nextProps){
+    var that = this;
 
+    var intervalSrcProps = setInterval(function(){
+      if(that.state!==undefined){
+        if(nextProps.stream.videoSrcObject!==undefined){
+          var src = URL.createObjectURL(nextProps.stream.videoSrcObject);
+          if (!(that.state.videoSrcUnsafe === src)) {
+            that.setState({
+              videoSrc: src,
+              videoSrcUnsafe: src
+            });
+            clearInterval(intervalSrcProps);
+          }
+        }
+      }
+    }, 200);
+  }
 
   getNicknameTag() {
     return JSON.parse(this.props.stream.connection.data).clientData;
