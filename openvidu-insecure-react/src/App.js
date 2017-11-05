@@ -44,15 +44,12 @@ class App extends Component {
   joinSession() {
 
       this.OV = new OpenVidu();
-      console.log(this.OV);
 
       this.setState({
         session: this.OV.initSession("wss://" + window.location.hostname + ":8443/" + this.sessionId.value + '?secret=MY_SECRET'),
       }, () => {
 
         var mySession = this.state.session;
-
-        console.log(mySession);
         
         var that1 = this;
 
@@ -136,8 +133,6 @@ class App extends Component {
         myRemoteStreams.splice(index, 1);
         this.setState({
           remoteStreams: myRemoteStreams
-        }, () => {
-          console.log(myRemoteStreams);
         });
       }
     }
@@ -160,16 +155,13 @@ class App extends Component {
       window.removeEventListener("beforeunload", this.onbeforeunload)
     }
 
-    handleMainVideoStream(event) {
-      this.getMainVideoStream(event.stream);
+    handleMainVideoStream(stream) {
+      this.getMainVideoStream(stream);
     }
 
   render() {
     var valueSessionId = this.state.valueSessionId;
     var valueUserName = this.state.valueUserName;
-    console.log(this.state.localStream);
-    console.log(this.state.remoteStreams);
-    console.log(this.state.mainVideoStream);
       return (
         <div id="main-container" className="container">
         { this.state.session === undefined ? <div id="join">
