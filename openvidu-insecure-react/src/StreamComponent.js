@@ -56,7 +56,9 @@ export default class StreamComponent extends Component {
   }
   
   videoClicked(event) {
-    this.props.mainVideoStream(this.props.stream);
+    if(this.props.mainVideoStream){
+      this.props.mainVideoStream(this.props.stream);
+    }
   }
 
   handleVideoClicked(event){
